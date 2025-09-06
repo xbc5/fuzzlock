@@ -116,6 +116,101 @@ All content is trimmed of whitespace and newlines before copying.
 
 5. When all values are entered, Fuzzlock creates the appropriate secret file in `.secrets`, naming it after the chosen spec (like `account.gpg` for the "account" spec). The script then ends.
 
+### Handling Existing Secrets
+
+If a secret file already exists for the chosen identifier/sub-identifier/spec combination:
+
+1. Fuzzlock warns the user that the secret already exists and presents three options:
+   - **Quit** (default): Cancel the operation
+   - **Open in EDITOR**: Open the existing secret file for modification
+   - **Proceed and overwrite**: Continue with creating a new secret that will replace the existing one
+
+2. If the user chooses to proceed and overwrite:
+   - They complete entering all new values as normal
+   - Before actually overwriting the file, Fuzzlock prompts for final confirmation: `Are you sure you want to overwrite the existing secret? [N/y]`
+   - Default response is "N" (no) to prevent accidental data loss
+   - Only "y" or "Y" will proceed with the overwrite
+
+---
+
+### Modifying Secrets
+
+- To modify an existing secret, run `fuzzlock modify`.
+- You'll be prompted to pick from all existing secret files through `fzf`. The selection will show the full path format:
+
+```
+example.com/user1/account.gpg
+example.com/user1/totp.gpg
+example.com/user2/account.gpg
+other.com/user3/generic.gpg
+```
+
+- Once you select a secret file, it's decrypted and opened in your `$EDITOR`.
+- The file will contain the key-value pairs in plain text format (e.g., `username:value`).
+- After making changes and saving, the file is automatically re-encrypted using GPG AES256 encryption.
+- If the editor is closed without saving or with an empty file, the modification is cancelled and the original secret remains unchanged.
+
+---
+
+### Deleting Secrets
+
+- To delete an existing secret, run `fuzzlock delete`.
+- You'll be prompted to pick from all existing secret files through `fzf`. The selection will show the full path format:
+
+```
+example.com/user1/account.gpg
+example.com/user1/totp.gpg
+example.com/user2/account.gpg
+other.com/user3/generic.gpg
+```
+
+- Once you select a secret file, Fuzzlock prompts for confirmation: `Are you sure you want to delete this secret? [N/y]`
+- Default response is "N" (no) to prevent accidental deletion.
+- Only "y" or "Y" will proceed with the deletion.
+- After deletion, the change is automatically committed to git with the appropriate commit message format.
+
+---
+
+## Backup and Version Control
+
+Fuzzlock automatically maintains a git repository in the `.secrets` directory to track all changes to secret files.
+
+### Automatic Git Commits
+
+- After every secret file operation (create, modify, delete), Fuzzlock automatically commits the changes to git.
+- All secret files use GPG ASCII armor format (base64 encoding) to ensure git compatibility.
+- Commit messages follow a contextual format based on the operation:
+  - **Create**: `create: <sub-identifier> <schema-type> on <identifier>`
+  - **Update**: `update: <sub-identifier> <schema-type> on <identifier>`
+  - **Delete**: `delete: <sub-identifier> <schema-type> on <identifier>`
+
+#### Examples:
+```
+create: user1 account on example.com
+update: admin totp on github.com
+delete: old-user generic on company.org
+```
+
+The schema type is derived from the spec name used (e.g., "account", "totp", "generic").
+
+### Repository Initialization
+
+- If `.secrets` is not already a git repository, Fuzzlock initializes it automatically on first use.
+- A `.gitignore` file is created to exclude temporary files and editor backups.
+
+### Repository State Validation
+
+- Before any operation, Fuzzlock checks for staged but uncommitted changes in the git repository.
+- If staged changes are detected, this indicates potential silent corruption or out-of-band modifications.
+- The user must resolve these changes before proceeding with any Fuzzlock operations.
+
+### Repository Reset
+
+- Use `fuzzlock reset` to clean the repository state when staged changes are detected.
+- This command resets all changes to HEAD and removes untracked files.
+- The user is prompted with a warning: `This will reset all changes and remove untracked files. Continue? [N/y]`
+- Default response is "N" (no) to prevent accidental data loss.
+
 ---
 
 ## Technology
