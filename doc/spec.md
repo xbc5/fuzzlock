@@ -318,6 +318,19 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 
 ---
 
+## Command Line Interface
+
+### Default Action
+
+- Running `fuzzlock` without any arguments executes `fuzzlock copy -a` (copy account secrets).
+
+### Help System
+
+- The help system is provided by Python's argparse module.
+- Use `fuzzlock --help` or `fuzzlock -h` to display available commands and usage information.
+
+---
+
 ## Dependency Management
 
 - At startup, Fuzzlock evaluates all required dependencies.
