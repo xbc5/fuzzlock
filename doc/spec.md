@@ -29,13 +29,7 @@ When a secret file is created, it's named after the spec file used to create it.
 
 Secret files contain simple key-value pairs.
 
-There is a built-in default spec named "account" with the following format:
-
-```
-schema: username,password
-commands: a,account
-help: Stores a username and password for an account
-```
+There is a built-in default spec named "account" that is automatically created if no `.specs` file exists.
 
 ### Example Secret File
 
@@ -50,28 +44,44 @@ password:...
 
 ## Specs
 
-A **spec** defines the layout and behavior for a specific type of secret file. Specs are plain text files stored in `.secrets/.specs`; each must include the following fields (order does not matter):
+A **spec** defines the layout and behavior for a specific type of secret file. All specs are stored in a single JSON file at `.secrets/.specs`. Each spec is defined by its name and must include the following fields:
 
-- **schema**: Comma-separated list of key names (for example, `username,password`)
-- **commands**: Two comma-separated values—one single-character command (like `a`) and one multi-character command (like `account`). These are used as subcommands with `fuzzlock copy`. The order can vary; Fuzzlock will recognize each and use them in the help menu for the script.
+- **schema**: Array of key names (for example, `["username", "password"]`)
+- **commands**: Array with exactly two values—one single-character command and one multi-character command (like `["a", "account"]`). These are used as subcommands with `fuzzlock copy`. The order can vary; Fuzzlock will recognize each and use them in the help menu for the script.
 - **help**: A non-empty string describing the spec. This appears as the help text in the CLI.
 
-#### Example Spec
+#### Example Specs File (`.secrets/.specs`):
 
-```
-schema: username,password
-commands: a,account
-help: Stores user login information for accounts
+```json
+{
+  "account": {
+    "schema": ["username", "password"],
+    "commands": ["a", "account"],
+    "help": "Stores user login information for accounts"
+  },
+  "totp": {
+    "schema": ["secret", "issuer"],
+    "commands": ["t", "totp"],
+    "help": "Stores TOTP authentication secrets"
+  },
+  "generic": {
+    "schema": ["value"],
+    "commands": ["g", "generic"],
+    "help": "Stores a single generic secret value"
+  }
+}
 ```
 
-If the order of the commands is reversed (for example, `commands: account,a`), Fuzzlock still assigns the short and long commands properly.
+The order of commands in the array can be reversed (for example, `["account", "a"]`), and Fuzzlock will still assign the short and long commands properly.
 
 #### Spec Validation
 
-When creating a spec:
-- The `schema` field must be present and include at least one key name, separated by commas. If there is only one key, a comma is not required.
-- The `commands` field must be present with exactly one single-character and one multi-character value. Hyphens are required only to join separate words.
+When creating or editing specs:
+- The `schema` field must be present and include at least one key name as an array.
+- The `commands` field must be present with exactly one single-character and one multi-character value as an array. Hyphens are required only to join separate words in multi-character commands.
 - The `help` field must be present and not empty.
+- All spec names must be valid and unique.
+- All commands (both single-character and multi-character) must be unique across all specs.
 
 ---
 
@@ -110,10 +120,10 @@ All content is trimmed of whitespace and newlines before copying.
 ### Creating Secrets
 
 1. Run `fuzzlock create`.
-2. Pick a spec. You can also create a new spec by entering a filename:
-   - If the spec does not exist, it will be created and opened in `$EDITOR`.
-   - Enter the three required lines (`schema`, `commands`, and `help`), in any order.
-   - After saving, the spec is checked for validity. If invalid, you’ll be asked to confirm and edit again, or cancel by pressing "N".
+2. Pick a spec. You can also create a new spec by entering a spec name:
+   - If the spec does not exist, you'll be prompted to create it.
+   - The `.specs` JSON file will be opened in `$EDITOR` for you to add the new spec.
+   - After saving, the specs file is checked for validity. If invalid, you'll be asked to confirm and edit again, or cancel by pressing "N".
 
 3. Provide identifying information (like a domain or label). This is needed for fuzzy selection. Entries that are blank or only spaces are not accepted. The value must be alphanumeric with hyphens and suitable as a POSIX directory name.
 
