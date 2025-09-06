@@ -33,7 +33,7 @@ There is a built-in default spec named "account" with the following format:
 
 ```
 schema: username,password
-flags: a,account
+commands: a,account
 help: Stores a username and password for an account
 ```
 
@@ -53,24 +53,24 @@ password:...
 A **spec** defines the layout and behavior for a specific type of secret file. Specs are plain text files stored in `.secrets/.specs`; each must include the following fields (order does not matter):
 
 - **schema**: Comma-separated list of key names (for example, `username,password`)
-- **flags**: Two comma-separated values—one single-character flag (like `a`) and one multi-character flag (like `account`). The single-character flag is used with `-a`, and the multi-character flag with `--account`. The order can vary; Fuzzlock will recognize each and use them in the help menu for the script.
+- **commands**: Two comma-separated values—one single-character command (like `a`) and one multi-character command (like `account`). These are used as subcommands with `fuzzlock copy`. The order can vary; Fuzzlock will recognize each and use them in the help menu for the script.
 - **help**: A non-empty string describing the spec. This appears as the help text in the CLI.
 
 #### Example Spec
 
 ```
 schema: username,password
-flags: a,account
+commands: a,account
 help: Stores user login information for accounts
 ```
 
-If the order of the flags is reversed (for example, `flags: account,a`), Fuzzlock still assigns the short and long flags properly.
+If the order of the commands is reversed (for example, `commands: account,a`), Fuzzlock still assigns the short and long commands properly.
 
 #### Spec Validation
 
 When creating a spec:
 - The `schema` field must be present and include at least one key name, separated by commas. If there is only one key, a comma is not required.
-- The `flags` field must be present with exactly one single-character and one multi-character value. Hyphens are required only to join separate words.
+- The `commands` field must be present with exactly one single-character and one multi-character value. Hyphens are required only to join separate words.
 - The `help` field must be present and not empty.
 
 ---
@@ -112,7 +112,7 @@ All content is trimmed of whitespace and newlines before copying.
 1. Run `fuzzlock create`.
 2. Pick a spec. You can also create a new spec by entering a filename:
    - If the spec does not exist, it will be created and opened in `$EDITOR`.
-   - Enter the three required lines (`schema`, `flags`, and `help`), in any order.
+   - Enter the three required lines (`schema`, `commands`, and `help`), in any order.
    - After saving, the spec is checked for validity. If invalid, you’ll be asked to confirm and edit again, or cancel by pressing "N".
 
 3. Provide identifying information (like a domain or label). This is needed for fuzzy selection. Entries that are blank or only spaces are not accepted. The value must be alphanumeric with hyphens and suitable as a POSIX directory name.
