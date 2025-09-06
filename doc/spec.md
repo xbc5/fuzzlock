@@ -277,8 +277,27 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 
 - The script automatically appends `.tar` for unencrypted exports or `.tar.gpg` for encrypted exports.
 - Any user-provided file extensions are ignored.
+- If the target archive already exists, the user is prompted: `Archive already exists. Overwrite? [N/y]` (default is "N" to prevent accidental overwriting).
 
 ---
+
+### Importing Secrets
+
+- Use `fuzzlock import <archive_path>` to restore from an exported archive.
+- Import only works if `~/.secrets` does not exist.
+- If `~/.secrets` already exists, the command fails with an error message.
+- The archive is always extracted to `~/.secrets` regardless of where the command is executed.
+- The script determines file type using MIME type detection, not file extensions.
+- If the archive is encrypted, the user will be prompted for the decryption password.
+- The git repository is restored as part of the archive (no initialization needed).
+
+---
+
+## Dependency Management
+
+- At startup, Fuzzlock evaluates all required dependencies.
+- If any dependencies are missing, it prints all missing dependencies and exits.
+- No operations are performed if dependencies are not satisfied.
 
 ## Technology
 
