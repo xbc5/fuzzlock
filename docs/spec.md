@@ -1,5 +1,21 @@
 # Software Specification: Fuzzlock Secrets Vault
 
+## Glossary
+
+**Identifier**: The top-level directory name used to group secrets, typically a domain name. Must be alphanumeric with hyphens only and valid as a POSIX directory name.
+
+**SubIdentifier**: The second-level directory name used to group secrets within an Identifier, typically an account name. Must be alphanumeric with hyphens only and valid as a POSIX directory name.
+
+**FieldName**: The key names used within secret files (e.g., "username", "password"). Must be lowercase, alphanumeric, with hyphens required only to join separate words.
+
+**MasterKey**: A 4096-bit GPG private key exported to ASCII armor format and encrypted with AES256. Stored in `.secrets/.masterkey` and committed to git only after successful creation and encryption.
+
+**GitCommit**: Automatic commit messages generated from context using the format "[operation]: [SubIdentifier] [spec-type] on [Identifier]" (e.g., "create: user1 account on example.com").
+
+**SpecFile**: A JSON file located at `.secrets/.specs` that defines all available secret types and their schemas. If this file doesn't exist, only the built-in "account" spec is available.
+
+---
+
 ## Overview
 
 Fuzzlock is a secrets vault for Linux systems. It uses a GPG 4096-bit private key for encryption and relies on `fzf` for fuzzy selection. All secrets are kept in individual files inside the `.secrets` directory in the user's home directory.
@@ -8,7 +24,7 @@ Fuzzlock is a secrets vault for Linux systems. It uses a GPG 4096-bit private ke
 
 ## File Structure
 
-Secrets are grouped by identifier (such as domain) and sub-identifier (such as account):
+Secrets are grouped by Identifier (such as domain) and SubIdentifier (such as account):
 
 ```
 .secrets/
@@ -23,13 +39,13 @@ Secrets are grouped by identifier (such as domain) and sub-identifier (such as a
 └── other.com/
 ```
 
-The identifier and sub-identifier are directories. Typically, they're domain names and account names, but the value MUST be alphanumeric or include hyphens. Both must also be valid POSIX directory names.
+The Identifier and SubIdentifier are directories as defined in the Glossary.
 
 When a secret file is created, it's named after the spec file used to create it. For instance, if the "account" spec is selected, the resulting secret file will be called `account.gpg`.
 
 Secret files contain simple key-value pairs.
 
-There is a built-in default spec named "account" that is automatically created if no `.specs` file exists.
+There is a built-in default spec named "account" that is always available, even when no SpecFile exists.
 
 ### Example Secret File
 
@@ -42,12 +58,16 @@ password:...
 
 ---
 
+## SpecFile
+
+The SpecFile (`.secrets/.specs`) is a JSON file that defines all available secret types beyond the built-in "account" spec. If no SpecFile exists, only the built-in "account" spec is available.
+
 ## Specs
 
-A **spec** defines the layout and behavior for a specific type of secret file. All specs are stored in a single JSON file at `.secrets/.specs`. Each spec is defined by its name and must include the following fields:
+A **spec** defines the layout and behavior for a specific type of secret file. Custom specs are stored in the SpecFile. Each spec is defined by its name and must include the following fields:
 
 - **schema**: Array of key names (for example, `["username", "password"]`)
-- **commands**: Array with exactly two values—one single-character command and one multi-character command (like `["a", "account"]`). These are used as subcommands with `fuzzlock copy`. The order can vary; Fuzzlock will recognize each and use them in the help menu for the script.
+- **commands**: Array with exactly two values—one single-character command and one multi-character command (like `["a", "account"]`). These are used as subcommands with `fuzzlock copy`. The order can vary; Fuzzlock will recognize each and use them in the help menu for the script. Multi-character commands use hyphens only to join separate words.
 - **help**: A non-empty string describing the spec. This appears as the help text in the CLI.
 
 #### Example Specs File (`.secrets/.specs`):
@@ -78,7 +98,7 @@ The order of commands in the array can be reversed (for example, `["account", "a
 
 When creating or editing specs:
 - The `schema` field must be present and include at least one key name as an array.
-- The `commands` field must be present with exactly one single-character and one multi-character value as an array. Hyphens are required only to join separate words in multi-character commands.
+- The `commands` field must be present with exactly one single-character and one multi-character value as an array. Multi-character commands use hyphens only to join separate words.
 - The `help` field must be present and not empty.
 - All spec names must be valid and unique.
 - All commands (both single-character and multi-character) must be unique across all specs.
@@ -120,18 +140,15 @@ All content is trimmed of whitespace and newlines before copying.
 ### Creating Secrets
 
 1. Run `fuzzlock create`.
-2. Pick a spec. The user can also create a new spec by entering a spec name:
-   - If the spec does not exist, the user will be prompted to create it.
-   - The `.specs` JSON file will be opened in `$EDITOR` for the user to add the new spec.
-   - After saving, the specs file is checked for validity. If invalid, the user will be asked to confirm and edit again, or cancel by pressing "N".
+2. Pick a spec from available specs (built-in "account" spec plus any defined in the SpecFile). If the SpecFile doesn't exist, only the "account" spec is available.
 
-3. Provide identifying information (like a domain or label). This is needed for fuzzy selection. Entries that are blank or only spaces are not accepted. The value must be alphanumeric with hyphens and suitable as a POSIX directory name.
+3. Provide the Identifier and SubIdentifier as defined in the Glossary. Entries that are blank or only spaces are not accepted.
 
 4. For each key in the chosen spec's schema, the user will be prompted for a value, following the schema's order:
    - Inputs must not be blank or just spaces.
    - Inputs are trimmed of whitespace and newlines.
 
-5. When all values are entered, Fuzzlock creates the appropriate secret file in `.secrets`, naming it after the chosen spec (like `account.gpg` for the "account" spec). The script then ends.
+5. When all values are entered, Fuzzlock creates the appropriate secret file in `.secrets`, naming it after the chosen spec (like `account.gpg` for the "account" spec). The change is automatically committed to git using the GitCommit format. The script then ends.
 
 ### Handling Existing Secrets
 
@@ -165,6 +182,7 @@ other.com/user3/generic.gpg
 - Once the user selects a secret file, it's decrypted using the master GPG key and opened in the user's `$EDITOR`.
 - The file will contain the key-value pairs in plain text format (e.g., `username:value`).
 - After making changes and saving, the file is automatically re-encrypted using the master GPG key.
+- The change is automatically committed to git using the GitCommit format.
 - If the editor is closed without saving or with an empty file, the modification is cancelled and the original secret remains unchanged.
 
 ---
@@ -184,7 +202,17 @@ other.com/user3/generic.gpg
 - Once the user selects a secret file, Fuzzlock prompts for confirmation: `Are you sure you want to delete this secret? [N/y]`
 - Default response is "N" (no) to prevent accidental deletion.
 - Only "y" or "Y" will proceed with the deletion.
-- After deletion, the change is automatically committed to git with the appropriate commit message format.
+- After deletion, the change is automatically committed to git using the GitCommit format.
+
+---
+
+### Editing Specs
+
+- Use `fuzzlock spec edit` to modify the SpecFile.
+- The SpecFile (`.secrets/.specs`) is opened in the user's `$EDITOR`.
+- After saving, the SpecFile is validated for correctness.
+- If validation fails, the user is prompted to edit again or cancel the operation.
+- Specs are validated before they are used in operations to ensure command uniqueness and proper formatting.
 
 ---
 
@@ -194,21 +222,8 @@ Fuzzlock automatically maintains a git repository in the `.secrets` directory to
 
 ### Automatic Git Commits
 
-- After every secret file operation (create, modify, delete), Fuzzlock automatically commits the changes to git.
+- After every secret file operation (create, modify, delete), Fuzzlock automatically commits the changes to git using the GitCommit format defined in the Glossary.
 - All secret files are encrypted with the master GPG key and stored in ASCII armor format to ensure git compatibility.
-- Commit messages follow a contextual format based on the operation:
-  - **Create**: `create: <sub-identifier> <schema-type> on <identifier>`
-  - **Update**: `update: <sub-identifier> <schema-type> on <identifier>`
-  - **Delete**: `delete: <sub-identifier> <schema-type> on <identifier>`
-
-#### Examples:
-```
-create: user1 account on example.com
-update: admin totp on github.com
-delete: old-user generic on company.org
-```
-
-The schema type is derived from the spec name used (e.g., "account", "totp", "generic").
 
 ### Repository Initialization
 
@@ -234,11 +249,11 @@ The schema type is derived from the spec name used (e.g., "account", "totp", "ge
 
 ### Master Key Management
 
-- Fuzzlock uses a single 4096-bit GPG private key for all encryption operations to ensure password synchronization.
-- The master key itself is encrypted with AES256 using a user-provided password.
-- The encrypted master key is stored in `.secrets/.masterkey` as ASCII armor format.
-- The master key file is version controlled along with all secret files.
-- All secret files are encrypted using this master GPG key (asymmetric encryption).
+- Fuzzlock uses a single MasterKey (as defined in the Glossary) for all encryption operations to ensure password synchronization.
+- The MasterKey is a 4096-bit GPG private key that is exported to ASCII armor format and encrypted at rest with AES256 using a user-provided password.
+- The encrypted MasterKey is stored in `.secrets/.masterkey`.
+- The MasterKey file is version controlled along with all secret files.
+- All secret files are encrypted using the MasterKey in its imported state in GPG (asymmetric encryption). The `.masterkey` file serves as a backup of the GPG key.
 
 ### Encryption Abstraction
 
@@ -251,22 +266,22 @@ This design allows Fuzzlock to migrate away from GPG to other encryption methods
 
 ### Master Key Initialization
 
-- On first use, if no master key exists, Fuzzlock prompts the user to create one.
-- The user provides a password that will be used to encrypt the master key.
-- A 4096-bit GPG private key is generated and stored in `.secrets/.masterkey`.
-- Upon master key creation, it is automatically committed to git.
+- On first use, if no MasterKey exists, Fuzzlock prompts the user to create one.
+- The user provides a password that will be used to encrypt the MasterKey.
+- A 4096-bit GPG private key is generated, exported to ASCII armor format, encrypted with AES256, and stored in `.secrets/.masterkey`.
+- The MasterKey is committed to git only after successful creation and encryption.
 
 ### Session Management
 
-- At the start of each session, users must provide their master key password.
-- The master key remains unlocked in memory for the duration of the session.
-- All secret files are encrypted/decrypted using this master key.
+- At the start of each session, users must provide their MasterKey password.
+- The MasterKey remains unlocked in memory for the duration of the session.
+- All secret files are encrypted/decrypted using the MasterKey.
 
 ### Password Recovery
 
-- There is no recovery mechanism for forgotten master key passwords.
+- There is no recovery mechanism for forgotten MasterKey passwords.
 - Users are responsible for backing up their entire `.secrets` directory.
-- Forgetting the master key password means permanent loss of access to all secrets.
+- Forgetting the MasterKey password means permanent loss of access to all secrets.
 
 ---
 
@@ -275,7 +290,7 @@ This design allows Fuzzlock to migrate away from GPG to other encryption methods
 - Use `fuzzlock export [path]` to create a backup of the entire `.secrets` directory.
 - The export creates a tar archive containing all secrets and configuration files.
 - The user is prompted whether to encrypt the export: `Encrypt export? [Y/n]` (default is Yes).
-- If encrypted, the export uses GPG AES256 symmetric encryption with a user-provided password.
+- If encrypted, the export uses GPG with AES256 symmetric encryption with a user-provided password.
 
 #### File Naming and Paths:
 
@@ -313,11 +328,11 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 
 ### Changing Master Key Password
 
-- Use `fuzzlock change-password` to update the master key encryption password.
-- The user is prompted for the current master key password.
+- Use `fuzzlock change-password` to update the MasterKey encryption password.
+- The user is prompted for the current MasterKey password.
 - The user is then prompted to enter a new password.
-- The master key is re-encrypted with the new password and saved.
-- The change is committed to git only after the master key has been successfully changed and encrypted.
+- The MasterKey is re-encrypted with the new password and saved.
+- The change is committed to git only after the MasterKey has been successfully changed and encrypted.
 
 ---
 
@@ -350,7 +365,7 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 
 ### Default Action
 
-- Running `fuzzlock` without any arguments executes `fuzzlock copy account` (copy account secrets).
+- Running `fuzzlock` without any arguments executes `fuzzlock copy account` (copy account secrets using the built-in "account" spec).
 
 ### Help System
 
@@ -360,6 +375,7 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 ### Error Handling
 
 - If `fzf` selection is cancelled by the user, the script exits silently.
+- For other errors (GPG failures, file permission issues, invalid input validation, etc.), appropriate error messages are displayed for the user to handle.
 
 ---
 
@@ -371,7 +387,7 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 
 ## Spec Command Validation
 
-- At startup, Fuzzlock validates that all commands defined in spec files are unique.
+- Before specs are used in operations, Fuzzlock validates that all commands defined in the SpecFile are unique.
 - Both single-character and multi-character commands must be unique across all specs.
 - If duplicate commands are found, the script prints all conflicting commands and exits.
 - No operations are performed if command conflicts exist.
@@ -379,8 +395,8 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 ## Implementation
 
 - The entire script must be contained in a single Python file.
-- The script must be highly portable with no external dependencies other than `gpg` and `fzf`.
-- Development dependencies for linting and formatting are acceptable but not required for script execution.
+- The script must be highly portable with no external runtime dependencies other than `gpg` and `fzf`.
+- External development dependencies (such as pytest, linting tools) are acceptable but not required for script execution.
 
 ## Code Quality Requirements
 
@@ -398,8 +414,8 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 
 ## Technology
 
-- **Python** (standard library only, no external dependencies)
-- **GPG** (for master key generation and AES256 encryption)
+- **Python** (standard library only, no external runtime dependencies)
+- **GPG** (for MasterKey generation and AES256 encryption)
 - **fzf** (fuzzy selection with fixed vertical size displaying ~10 results)
 
 ## Testing
