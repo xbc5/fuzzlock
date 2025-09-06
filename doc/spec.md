@@ -2,7 +2,7 @@
 
 ## Overview
 
-Fuzzlock is a secrets vault for Linux systems. It uses GPG for AES 256 encryption and relies on `fzf` for fuzzy selection. All secrets are kept in individual files inside the `.secrets` directory in your home directory.
+Fuzzlock is a secrets vault for Linux systems. It uses a GPG 4096-bit private key for encryption and relies on `fzf` for fuzzy selection. All secrets are kept in individual files inside the `.secrets` directory in your home directory.
 
 ---
 
@@ -99,7 +99,7 @@ example.com/user2
 other.com/user3
 ```
 
-- Once you select an account, the corresponding secret file is opened and decrypted using AES256 symmetric encryption via GPG. Your GPG password only needs to be entered once per session, thanks to GPG's built-in caching.
+- Once you select an account, the corresponding secret file is opened and decrypted using the master GPG key. Your master key password only needs to be entered once per session.
 
 #### Copying All Fields (no field specified):
 - For each field in the spec's schema (in the listed order), the value is copied to the clipboard one at a time. Any fields not found in the schema are skipped.
@@ -162,9 +162,9 @@ example.com/user2/account.gpg
 other.com/user3/generic.gpg
 ```
 
-- Once you select a secret file, it's decrypted and opened in your `$EDITOR`.
+- Once you select a secret file, it's decrypted using the master GPG key and opened in your `$EDITOR`.
 - The file will contain the key-value pairs in plain text format (e.g., `username:value`).
-- After making changes and saving, the file is automatically re-encrypted using GPG AES256 encryption.
+- After making changes and saving, the file is automatically re-encrypted using the master GPG key.
 - If the editor is closed without saving or with an empty file, the modification is cancelled and the original secret remains unchanged.
 
 ---
@@ -195,7 +195,7 @@ Fuzzlock automatically maintains a git repository in the `.secrets` directory to
 ### Automatic Git Commits
 
 - After every secret file operation (create, modify, delete), Fuzzlock automatically commits the changes to git.
-- All secret files use GPG ASCII armor format (base64 encoding) to ensure git compatibility.
+- All secret files are encrypted with the master GPG key and stored in ASCII armor format to ensure git compatibility.
 - Commit messages follow a contextual format based on the operation:
   - **Create**: `create: <sub-identifier> <schema-type> on <identifier>`
   - **Update**: `update: <sub-identifier> <schema-type> on <identifier>`
@@ -234,10 +234,11 @@ The schema type is derived from the spec name used (e.g., "account", "totp", "ge
 
 ### Master Key Management
 
-- Fuzzlock uses a single master key for all encryption operations to ensure password synchronization.
-- The master key is a 4096-bit GPG private key, encrypted with a user-provided password.
-- The master key is stored in `.secrets/.masterkey` as ASCII armor format.
+- Fuzzlock uses a single 4096-bit GPG private key for all encryption operations to ensure password synchronization.
+- The master key itself is encrypted with AES256 using a user-provided password.
+- The encrypted master key is stored in `.secrets/.masterkey` as ASCII armor format.
 - The master key file is version controlled along with all secret files.
+- All secret files are encrypted using this master GPG key (asymmetric encryption).
 
 ### Encryption Abstraction
 
