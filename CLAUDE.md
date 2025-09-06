@@ -8,11 +8,15 @@ Understood! Here is your text, rewritten for greater fluency, while strictly pre
 - Your code MUST be well-documented.
 - Your code MUST be well-commented.
 - The [spec](./docs/spec.md) is authoritative.
+- Before you start writing code, you MUST first create a plan of [TODOs](./docs/todos.md), and keep it updated as you work, making changes whenever necessary.
 
 ## Testing
 
 - Your tests MUST be thorough and cover every scenario in the acceptance test cases.
-- Your tests MUST test only one thing at a time.
+- Your unit tests MUST test only one thing at a time.
+- Your E2E tests may cover multiple aspects or workflows in a single scenario.
+- Your E2E tests are designed to validate the CLI.
+- You MAY use a Docker container for your E2E tests to manage the environment, but your unit tests must use mocks when necessary.
 
 ## Comments
 
