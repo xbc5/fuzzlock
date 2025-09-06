@@ -41,7 +41,7 @@ Secrets are grouped by Identifier (such as domain) and SubIdentifier (such as ac
 ├── example.com/
 │   ├── user1/
 │   │   ├── account.gpg
-│   │   ├── generic.gpg
+│   │   ├── backup-keys.gpg
 │   │   └── totp.gpg
 │   └── user2/
 │       ├── account.gpg
@@ -124,7 +124,7 @@ example.com/user2
 other.com/user3
 ```
 
-- Once the user selects an account, the corresponding secret file is opened and decrypted using the master GPG key. The user's master key password only needs to be entered once per session.
+- Once the user selects an account, the corresponding secret file is opened and decrypted using the MasterGpgKey. The user's MasterKeyFile password only needs to be entered once per session.
 
 #### Copying All Fields (no field specified):
 - For each field in the spec's schema (in the listed order), the value is copied to the clipboard one at a time. Any fields not found in the schema are skipped.
@@ -184,9 +184,9 @@ example.com/user2/account.gpg
 other.com/user3/backup-keys.gpg
 ```
 
-- Once the user selects a secret file, it's decrypted using the master GPG key and opened in the user's `$EDITOR`.
+- Once the user selects a secret file, it's decrypted using the MasterGpgKey and opened in the user's `$EDITOR`.
 - The file will contain the key-value pairs in plain text format (e.g., `username:value`).
-- After making changes and saving, the file is automatically re-encrypted using the master GPG key.
+- After making changes and saving, the file is automatically re-encrypted using the MasterGpgKey.
 - The change is automatically committed to git using the CommitMessage format.
 - If the editor is closed without saving or with an empty file, the modification is cancelled and the original secret remains unchanged.
 
@@ -207,7 +207,7 @@ other.com/user3/backup-keys.gpg
 - Once the user selects a secret file, Fuzzlock prompts for confirmation: `Are you sure you want to delete this secret? [N/y]`
 - Default response is "N" (no) to prevent accidental deletion.
 - Only "y" or "Y" will proceed with the deletion.
-- After deletion, the change is automatically committed to git using the GitCommit format.
+- After deletion, the change is automatically committed to git using the CommitMessage format.
 
 ---
 
@@ -215,9 +215,8 @@ other.com/user3/backup-keys.gpg
 
 - Use `fuzzlock spec edit` to modify the SpecFile.
 - The SpecFile (`.secrets/.specs`) is opened in the user's `$EDITOR`.
-- After saving, the SpecFile is validated for correctness.
+- After saving, the SpecFile is validated for correctness as described in the SpecFile Validation section.
 - If validation fails, the user is prompted to edit again or cancel the operation.
-- Specs are validated before they are used in operations to ensure command uniqueness and proper formatting.
 
 ---
 
@@ -253,7 +252,7 @@ Fuzzlock automatically maintains a git repository in the `.secrets` directory to
 ### Automatic Git Commits
 
 - After every secret file operation (create, modify, delete), Fuzzlock automatically commits the changes to git using the CommitMessage format defined in the Glossary.
-- All secret files are encrypted with the master GPG key and stored in ASCII armor format to ensure git compatibility.
+- All secret files are encrypted with the MasterGpgKey and stored in ASCII armor format to ensure git compatibility.
 
 ### Repository Initialization
 
@@ -290,10 +289,11 @@ Fuzzlock automatically maintains a git repository in the `.secrets` directory to
 
 All encryption operations are abstracted behind a single encryption class that MUST be general enough to support different encryption methods, including future post-quantum cryptography. The abstraction hides all implementation details while maintaining the only consistent user experience requirement:
 
-- User provides a single password per session
-- That password applies to encrypt/decrypt all secret files
+- User provides a single password per session to unlock their MasterKeyFile
+- That password unlocks the encryption key used to encrypt/decrypt all secret files
+- The user experience remains the same regardless of the underlying encryption method
 
-This design allows Fuzzlock to migrate away from GPG to other encryption methods without changing the user experience or core application logic. Future encryption backends may use different underlying mechanisms (derived keys, certificates, quantum-resistant algorithms, etc.) but the user will always provide one password that secures all their secrets.
+This design allows Fuzzlock to migrate away from GPG to other encryption methods without changing the user experience or core application logic. Future encryption backends may use different underlying mechanisms (derived keys, certificates, quantum-resistant algorithms, etc.) but the user will always provide one password per session that secures access to all their secrets.
 
 ### Master Key Initialization
 
@@ -362,7 +362,7 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 - Use `fuzzlock change-password` to update the MasterKeyFile encryption password.
 - The user is prompted for the current MasterKeyFile password.
 - The user is then prompted to enter a new password.
-- The MasterKeyFile is re-encrypted with the new password and saved with updated fingerprint if the user changes the MasterGpgKey at any point (not yet implemented.)
+- The MasterKeyFile is re-encrypted with the new password and saved. The fingerprint remains unchanged since only the encryption password is modified, not the underlying MasterGpgKey.
 - The change is committed to git only after the MasterKeyFile has been successfully changed and encrypted.
 
 ---
@@ -370,7 +370,7 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 ### Listing Secrets
 
 - Use `fuzzlock list` to view all existing secrets in a directory tree format.
-- The output displays only secret files and the master key file, using colors when possible.
+- The output displays only secret files and the MasterKeyFile, using colors when possible.
 - Shows the complete structure including identifiers, sub-identifiers, and secret files.
 
 #### Example Output:
@@ -380,14 +380,14 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 ├── example.com/
 │   ├── user1/
 │   │   ├── account.gpg
-│   │   ├── generic.gpg
+│   │   ├── backup-keys.gpg
 │   │   └── totp.gpg
 │   └── user2/
 │       ├── account.gpg
 │       └── totp.gpg
 └── other.com/
     └── user3/
-        └── generic.gpg
+        └── backup-keys.gpg
 ```
 
 ---
