@@ -18,6 +18,32 @@
 - Your E2E tests are designed to validate the CLI.
 - You MAY use a Docker container for your E2E tests to manage the environment, but your unit tests must use mocks when necessary.
 
+## Documentation
+
+- Your documentation MUST be concise.
+- Your documentation MUST be accurate and current.
+- Your documentation MUST use a first-person, imperative style.
+- Your documentation MUST clearly state what something does, and explain why it exists.
+
+## Examples of Good Documentation
+
+```python
+def fahrenheit_to_celsius(f_temp):
+    """
+    Convert a temperature from Fahrenheit to Celsius.
+
+    We need this to work temperature values in Celsius because
+    many datasets and applications provide data in Fahrenheit.
+
+    Parameters:
+        f_temp (float): Temperature in degrees Fahrenheit.
+
+    Returns:
+        float: Temperature in degrees Celsius.
+    """
+    return (f_temp - 32) * 5.0 / 9.0
+```
+
 ## Comments
 
 - Use comments to label sections of code; do not add comments to every line.
