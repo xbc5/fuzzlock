@@ -439,6 +439,7 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 ## Technology
 
 - **Python** (standard library only, no external runtime dependencies)
+- **Git** (for automatic git commits)
 - **GPG** (for MasterGpgKey generation and AES256 encryption)
 - **fzf** (fuzzy selection with fixed vertical size displaying ~10 results)
 
