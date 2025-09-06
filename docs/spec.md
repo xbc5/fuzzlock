@@ -454,10 +454,11 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 ## 1. Installation and Dependencies
 
 ### 1.1 Dependency Validation
-- **Given** the system is missing required dependencies
+- **Given** some or all required dependencies are missing
 - **When** fuzzlock is executed
-- **Then** all missing dependencies are printed and the script exits
-- **And** no operations are performed
+- **Then** ALL missing dependencies are identified and printed
+- **And** the script exits without attempting any operations
+- **And** no partial functionality is provided
 
 ### 1.2 Required Dependencies Present
 - **Given** all required dependencies (Python, git, GPG, fzf) are installed
@@ -471,12 +472,6 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 - **And** this happens BEFORE any argument parsing or operation logic
 - **And** no operations are attempted if dependencies are missing
 
-### 1.4 Partial Dependency Availability
-- **Given** some but not all dependencies are available
-- **When** fuzzlock is executed
-- **Then** ALL missing dependencies are identified and printed
-- **And** the script exits without attempting any operations
-- **And** no partial functionality is provided
 
 ## 2. File Structure and Directory Management
 
@@ -689,33 +684,28 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 - **Then** an appropriate message is displayed indicating no secrets are available
 - **And** the operation exits gracefully
 
-### 6.8 Session Password Handling
-- **Given** a user starts a copy operation
-- **When** the MasterKeyFile password is required
-- **Then** the password is requested only once per session
-- **And** subsequent operations in the same session use the cached authentication
 
-### 6.9 Copying Without MasterKeyFile
+### 6.8 Copying Without MasterKeyFile
 - **Given** no MasterKeyFile exists in the system
 - **When** any copy operation is attempted
 - **Then** the master key creation process is triggered automatically
 - **And** the user must create a MasterGpgKey before copying can proceed
 
-### 6.10 Missing Fields in Secret File
+### 6.9 Missing Fields in Secret File
 - **Given** a secret file is missing some fields from the spec schema
 - **When** copying all fields is attempted
 - **Then** missing fields are skipped gracefully
 - **And** only existing fields are copied to clipboard
 - **And** no error is displayed for missing fields
 
-### 6.11 Extra Fields in Secret File  
+### 6.10 Extra Fields in Secret File  
 - **Given** a secret file contains fields not in the spec schema
 - **When** copying all fields is attempted
 - **Then** extra fields are ignored during copying
 - **And** only fields listed in the spec schema are processed
 - **And** fields are processed in schema order, not file order
 
-### 6.12 Field Capitalization Display
+### 6.11 Field Capitalization Display
 - **Given** field names in the schema (e.g., "username", "backup-key")
 - **When** copying fields and displaying confirmation messages
 - **Then** field names are capitalized for display (e.g., "Username copied...", "Backup-key copied...")
@@ -748,20 +738,15 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 - **Then** an appropriate message is displayed indicating no secrets are available
 - **And** the operation exits gracefully
 
-### 7.5 Editor Environment Variable
-- **Given** the $EDITOR environment variable is not set
-- **When** `fuzzlock modify` is attempted
-- **Then** an appropriate error message is displayed
-- **And** the operation fails gracefully
 
-### 7.6 Malformed Secret File Content
+### 7.5 Malformed Secret File Content
 - **Given** a secret file contains malformed key:value pairs
 - **When** the file is opened for modification
 - **Then** the raw content is displayed in the editor
 - **And** the user can correct the format manually
 - **And** validation occurs when the file is saved and re-encrypted
 
-### 7.7 Git Commit Failure During Modification
+### 7.6 Git Commit Failure During Modification
 - **Given** a secret file is successfully modified and encrypted
 - **When** the automatic git commit fails
 - **Then** the modified file remains encrypted in place
@@ -996,9 +981,6 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 - **And** no other characters (including underscores) are permitted
 
 ### 12.3 Error Handling
-- **Given** fzf selection is cancelled by the user
-- **When** the cancellation occurs
-- **Then** the script exits silently
 - **Given** other errors occur (GPG failures, file permissions, etc.)
 - **When** the error is encountered
 - **Then** appropriate error messages are displayed
@@ -1042,12 +1024,22 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 - **And** help information is provided for correct usage
 - **And** the script exits with appropriate error codes
 
-### 13.4 FZF Configuration
+### 13.4 FZF Configuration and Behavior
 - **Given** fzf is used for selection interfaces
 - **When** selection screens are displayed
 - **Then** fzf shows a fixed vertical size displaying ~10 results
 - **And** fuzzy selection capabilities are available
 - **And** consistent behavior across all selection operations
+- **Given** any fzf selection interface is displayed
+- **When** the user cancels the selection (Ctrl+C, ESC, etc.)
+- **Then** the script exits silently without error messages
+- **And** no partial operations are performed
+- **And** the exit is clean and immediate
+- **Given** an fzf selection interface has no items to display
+- **When** the selection screen would appear
+- **Then** appropriate handling occurs for empty selection lists
+- **And** the user is informed about the lack of available options
+- **And** the operation exits gracefully
 
 ### 13.5 Help Menu Integration
 - **Given** custom specs with commands and help text exist
@@ -1056,28 +1048,14 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 - **And** help text from spec definitions is displayed
 - **And** built-in account spec help is included
 
-### 13.6 FZF Selection Cancellation
-- **Given** any fzf selection interface is displayed
-- **When** the user cancels the selection (Ctrl+C, ESC, etc.)
-- **Then** the script exits silently without error messages
-- **And** no partial operations are performed
-- **And** the exit is clean and immediate
-
-### 13.7 Empty FZF Selection Results
-- **Given** an fzf selection interface has no items to display
-- **When** the selection screen would appear
-- **Then** appropriate handling occurs for empty selection lists
-- **And** the user is informed about the lack of available options
-- **And** the operation exits gracefully
-
-### 13.8 Command Line Argument Validation
+### 13.6 Command Line Argument Validation
 - **Given** invalid command line arguments are provided
 - **When** argument parsing occurs
 - **Then** specific error messages identify the invalid arguments
 - **And** usage information is provided automatically
 - **And** the script exits with appropriate error codes
 
-### 13.9 Session and Command Lifecycle
+### 13.7 Session and Command Lifecycle
 - **Given** multiple operations are performed in sequence
 - **When** each command completes or fails
 - **Then** session state is maintained appropriately between commands
@@ -1190,9 +1168,9 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 - **Then** the original SpecFile is restored
 - **And** any invalid changes are discarded
 
-### 15.5 Editor Environment for Spec Edit
+### 15.5 Editor Environment Variable
 - **Given** the $EDITOR environment variable is not set
-- **When** `fuzzlock spec edit` is attempted
+- **When** `fuzzlock spec edit` or `fuzzlock modify` is attempted
 - **Then** an appropriate error message is displayed
 - **And** the operation fails gracefully
 
