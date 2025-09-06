@@ -339,6 +339,10 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 - The help system is provided by Python's argparse module.
 - Use `fuzzlock --help` or `fuzzlock -h` to display available commands and usage information.
 
+### Error Handling
+
+- If `fzf` selection is cancelled by the user, the script exits silently.
+
 ---
 
 ## Dependency Management
