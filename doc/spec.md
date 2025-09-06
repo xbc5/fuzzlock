@@ -293,6 +293,16 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 
 ---
 
+### Changing Master Key Password
+
+- Use `fuzzlock change-password` to update the master key encryption password.
+- The user is prompted for their current master key password.
+- The user is then prompted to enter a new password.
+- The master key is re-encrypted with the new password and saved.
+- The change is committed to git only after the master key has been successfully changed and encrypted.
+
+---
+
 ### Listing Secrets
 
 - Use `fuzzlock list` to view all existing secrets in a directory tree format.
