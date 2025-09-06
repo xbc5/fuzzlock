@@ -1,6 +1,6 @@
-Understood! Here is your text, rewritten for greater fluency, while strictly preserving your instructions:
+## Rules
 
----
+- You MUST never modify files outside of this repository.
 
 ## Implementation
 
