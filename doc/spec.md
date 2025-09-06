@@ -2,7 +2,7 @@
 
 ## Overview
 
-Fuzzlock is a secrets vault for Linux systems. It uses a GPG 4096-bit private key for encryption and relies on `fzf` for fuzzy selection. All secrets are kept in individual files inside the `.secrets` directory in your home directory.
+Fuzzlock is a secrets vault for Linux systems. It uses a GPG 4096-bit private key for encryption and relies on `fzf` for fuzzy selection. All secrets are kept in individual files inside the `.secrets` directory in the user's home directory.
 
 ---
 
@@ -91,7 +91,7 @@ When creating or editing specs:
 
 - To copy a secret, run `fuzzlock copy <spec>` using either the single-character or multi-character spec identifier (e.g., `fuzzlock copy account` or `fuzzlock copy a`).
 - Optionally, specify a specific field: `fuzzlock copy <spec> <field>` (e.g., `fuzzlock copy account password`).
-- You'll be prompted to pick an account through `fzf`. Only the identifier (like domain) and sub-identifier (like account) will be shown in this format:
+- The user will be prompted to pick an account through `fzf`. Only the identifier (like domain) and sub-identifier (like account) will be shown in this format:
 
 ```
 example.com/user1
@@ -99,7 +99,7 @@ example.com/user2
 other.com/user3
 ```
 
-- Once you select an account, the corresponding secret file is opened and decrypted using the master GPG key. Your master key password only needs to be entered once per session.
+- Once the user selects an account, the corresponding secret file is opened and decrypted using the master GPG key. The user's master key password only needs to be entered once per session.
 
 #### Copying All Fields (no field specified):
 - For each field in the spec's schema (in the listed order), the value is copied to the clipboard one at a time. Any fields not found in the schema are skipped.
@@ -120,14 +120,14 @@ All content is trimmed of whitespace and newlines before copying.
 ### Creating Secrets
 
 1. Run `fuzzlock create`.
-2. Pick a spec. You can also create a new spec by entering a spec name:
-   - If the spec does not exist, you'll be prompted to create it.
-   - The `.specs` JSON file will be opened in `$EDITOR` for you to add the new spec.
-   - After saving, the specs file is checked for validity. If invalid, you'll be asked to confirm and edit again, or cancel by pressing "N".
+2. Pick a spec. The user can also create a new spec by entering a spec name:
+   - If the spec does not exist, the user will be prompted to create it.
+   - The `.specs` JSON file will be opened in `$EDITOR` for the user to add the new spec.
+   - After saving, the specs file is checked for validity. If invalid, the user will be asked to confirm and edit again, or cancel by pressing "N".
 
 3. Provide identifying information (like a domain or label). This is needed for fuzzy selection. Entries that are blank or only spaces are not accepted. The value must be alphanumeric with hyphens and suitable as a POSIX directory name.
 
-4. For each key in the chosen spec’s schema, you’ll be prompted for a value, following the schema's order:
+4. For each key in the chosen spec's schema, the user will be prompted for a value, following the schema's order:
    - Inputs must not be blank or just spaces.
    - Inputs are trimmed of whitespace and newlines.
 
@@ -143,7 +143,7 @@ If a secret file already exists for the chosen identifier/sub-identifier/spec co
    - **Proceed and overwrite**: Continue with creating a new secret that will replace the existing one
 
 2. If the user chooses to proceed and overwrite:
-   - They complete entering all new values as normal
+   - The user completes entering all new values as normal
    - Before actually overwriting the file, Fuzzlock prompts for final confirmation: `Are you sure you want to overwrite the existing secret? [N/y]`
    - Default response is "N" (no) to prevent accidental data loss
    - Only "y" or "Y" will proceed with the overwrite
@@ -153,7 +153,7 @@ If a secret file already exists for the chosen identifier/sub-identifier/spec co
 ### Modifying Secrets
 
 - To modify an existing secret, run `fuzzlock modify`.
-- You'll be prompted to pick from all existing secret files through `fzf`. The selection will show the full path format:
+- The user will be prompted to pick from all existing secret files through `fzf`. The selection will show the full path format:
 
 ```
 example.com/user1/account.gpg
@@ -162,7 +162,7 @@ example.com/user2/account.gpg
 other.com/user3/generic.gpg
 ```
 
-- Once you select a secret file, it's decrypted using the master GPG key and opened in your `$EDITOR`.
+- Once the user selects a secret file, it's decrypted using the master GPG key and opened in the user's `$EDITOR`.
 - The file will contain the key-value pairs in plain text format (e.g., `username:value`).
 - After making changes and saving, the file is automatically re-encrypted using the master GPG key.
 - If the editor is closed without saving or with an empty file, the modification is cancelled and the original secret remains unchanged.
@@ -172,7 +172,7 @@ other.com/user3/generic.gpg
 ### Deleting Secrets
 
 - To delete an existing secret, run `fuzzlock delete`.
-- You'll be prompted to pick from all existing secret files through `fzf`. The selection will show the full path format:
+- The user will be prompted to pick from all existing secret files through `fzf`. The selection will show the full path format:
 
 ```
 example.com/user1/account.gpg
@@ -181,7 +181,7 @@ example.com/user2/account.gpg
 other.com/user3/generic.gpg
 ```
 
-- Once you select a secret file, Fuzzlock prompts for confirmation: `Are you sure you want to delete this secret? [N/y]`
+- Once the user selects a secret file, Fuzzlock prompts for confirmation: `Are you sure you want to delete this secret? [N/y]`
 - Default response is "N" (no) to prevent accidental deletion.
 - Only "y" or "Y" will proceed with the deletion.
 - After deletion, the change is automatically committed to git with the appropriate commit message format.
@@ -314,7 +314,7 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 ### Changing Master Key Password
 
 - Use `fuzzlock change-password` to update the master key encryption password.
-- The user is prompted for their current master key password.
+- The user is prompted for the current master key password.
 - The user is then prompted to enter a new password.
 - The master key is re-encrypted with the new password and saved.
 - The change is committed to git only after the master key has been successfully changed and encrypted.
