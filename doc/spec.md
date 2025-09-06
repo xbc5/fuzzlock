@@ -379,12 +379,28 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 ## Implementation
 
 - The entire script must be contained in a single Python file.
+- The script must be highly portable with no external dependencies other than `gpg` and `fzf`.
+- Development dependencies for linting and formatting are acceptable but not required for script execution.
+
+## Code Quality Requirements
+
+- The code must be written using Python best practices.
+- The code must be highly testable with proper separation of concerns.
+- All code must be linted and formatted according to Python standards.
+- The code must pass all linting checks and formatting requirements.
+
+## Testing Requirements
+
+- There must be an extensive test suite covering all functionality.
+- The test suite must include unit tests for all major components.
+- All tests must pass before the code can be considered complete.
+- The code must comply with user acceptance tests.
 
 ## Technology
 
-- **Python**
+- **Python** (standard library only, no external dependencies)
 - **GPG** (for master key generation and AES256 encryption)
-- **fzf** (fuzzy selection)
+- **fzf** (fuzzy selection with fixed vertical size displaying ~10 results)
 
 ## Testing
 
