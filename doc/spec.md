@@ -244,6 +244,40 @@ This design allows Fuzzlock to migrate away from GPG to other encryption methods
 - The master key remains unlocked in memory for the duration of the session.
 - All secret files are encrypted/decrypted using this master key.
 
+### Password Recovery
+
+- There is no recovery mechanism for forgotten master key passwords.
+- Users are responsible for backing up their entire `.secrets` directory.
+- Forgetting the master key password means permanent loss of access to all secrets.
+
+---
+
+### Exporting Secrets
+
+- Use `fuzzlock export [path]` to create a backup of the entire `.secrets` directory.
+- The export creates a tar archive containing all secrets and configuration files.
+- The user is prompted whether to encrypt the export: `Encrypt export? [Y/n]` (default is Yes).
+- If encrypted, the export uses GPG AES256 symmetric encryption with a user-provided password.
+
+#### File Naming and Paths:
+
+- **No path provided**: Creates `secrets.tar` or `secrets.tar.gpg` in the current directory
+- **Directory path provided**: Creates the archive in that directory with the default name
+- **File path provided**: Uses the provided path as the base name, ignoring any extension
+- **Non-existent parent directories**: The final component becomes the filename
+
+#### Examples:
+```
+fuzzlock export                    # Creates ./secrets.tar(.gpg)
+fuzzlock export /backup/           # Creates /backup/secrets.tar(.gpg)
+fuzzlock export /backup/mydata     # Creates /backup/mydata.tar(.gpg)
+fuzzlock export /backup/mydata.zip # Creates /backup/mydata.tar(.gpg) (ignores .zip)
+fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
+```
+
+- The script automatically appends `.tar` for unencrypted exports or `.tar.gpg` for encrypted exports.
+- Any user-provided file extensions are ignored.
+
 ---
 
 ## Technology
