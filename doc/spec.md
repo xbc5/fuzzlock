@@ -79,8 +79,9 @@ When creating a spec:
 
 ### Copying Secrets to the Clipboard
 
-- To copy a secret, run `fuzzlock copy` and use the desired flag for the spec (like `-a` or `--account`, as listed in the spec).
-- You’ll be prompted to pick an account through `fzf`. Only the identifier (like domain) and sub-identifier (like account) will be shown in this format:
+- To copy a secret, run `fuzzlock copy <spec>` using either the single-character or multi-character spec identifier (e.g., `fuzzlock copy account` or `fuzzlock copy a`).
+- Optionally, specify a specific field: `fuzzlock copy <spec> <field>` (e.g., `fuzzlock copy account password`).
+- You'll be prompted to pick an account through `fzf`. Only the identifier (like domain) and sub-identifier (like account) will be shown in this format:
 
 ```
 example.com/user1
@@ -88,13 +89,19 @@ example.com/user2
 other.com/user3
 ```
 
-- Once you select an account, the corresponding secret file is opened and decrypted using AES256 symmetric encryption via GPG. Your GPG password only needs to be entered once per session, thanks to GPG’s built-in caching.
+- Once you select an account, the corresponding secret file is opened and decrypted using AES256 symmetric encryption via GPG. Your GPG password only needs to be entered once per session, thanks to GPG's built-in caching.
 
-- After decryption:
-  - For each field in the spec's schema (in the listed order), the value is copied to the clipboard one at a time. Any fields not found in the schema are skipped.
-  - For each copied field, Fuzzlock displays a message using the field name from the schema, capitalized (e.g., "Username copied...").
-  - Press Enter to copy the next field.
-  - When all fields are copied, Fuzzlock prints: "All fields copied!"
+#### Copying All Fields (no field specified):
+- For each field in the spec's schema (in the listed order), the value is copied to the clipboard one at a time. Any fields not found in the schema are skipped.
+- For each copied field, Fuzzlock displays a message using the field name from the schema, capitalized (e.g., "Username copied...").
+- Press Enter to copy the next field.
+- When all fields are copied, Fuzzlock prints: "All fields copied!"
+
+#### Copying Specific Field:
+- The script validates that the specified field exists in the chosen spec's schema.
+- If valid, only that field's value is copied to the clipboard.
+- The script displays a message (e.g., "Password copied...") and exits.
+- If the field is not found in the schema, an error message is displayed.
 
 All content is trimmed of whitespace and newlines before copying.
 
@@ -332,7 +339,7 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 
 ### Default Action
 
-- Running `fuzzlock` without any arguments executes `fuzzlock copy -a` (copy account secrets).
+- Running `fuzzlock` without any arguments executes `fuzzlock copy account` (copy account secrets).
 
 ### Help System
 
@@ -350,6 +357,10 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 - At startup, Fuzzlock evaluates all required dependencies.
 - If any dependencies are missing, it prints all missing dependencies and exits.
 - No operations are performed if dependencies are not satisfied.
+
+## Implementation
+
+- The entire script must be contained in a single Python file.
 
 ## Technology
 
