@@ -114,9 +114,9 @@ When creating or editing specs:
 
 ### Copying Secrets to the Clipboard
 
-- To copy a secret, run `fuzzlock copy <spec>` using either the single-character or multi-character spec identifier (e.g., `fuzzlock copy account` or `fuzzlock copy a`).
+- To copy a secret, run `fuzzlock copy <spec>` using either the single-character or multi-character spec Identifier (e.g., `fuzzlock copy account` or `fuzzlock copy a`).
 - Optionally, specify a specific field: `fuzzlock copy <spec> <field>` (e.g., `fuzzlock copy account password`).
-- The user will be prompted to pick an account through `fzf`. Only the identifier (like domain) and sub-identifier (like account) will be shown in this format:
+- The user will be prompted to pick an account through `fzf`. Only the Identifier (like domain) and SubIdentifier (like account) will be shown in this format:
 
 ```
 example.com/user1
@@ -157,7 +157,7 @@ All content is trimmed of whitespace and newlines before copying.
 
 ### Handling Existing Secrets
 
-If a secret file already exists for the chosen identifier/sub-identifier/spec combination:
+If a secret file already exists for the chosen Identifier/SubIdentifier/spec combination:
 
 1. Fuzzlock warns the user that the secret already exists and presents three options:
    - **Quit** (default): Cancel the operation
@@ -371,7 +371,7 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 
 - Use `fuzzlock list` to view all existing secrets in a directory tree format.
 - The output displays only secret files and the MasterKeyFile, using colors when possible.
-- Shows the complete structure including identifiers, sub-identifiers, and secret files.
+- Shows the complete structure including Identifiers, SubIdentifiers, and secret files.
 
 #### Example Output:
 ```
@@ -483,11 +483,11 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 - **And** a `.gitignore` file is created
 
 ### 2.2 Directory Structure Validation
-- **Given** secrets are created for multiple identifiers and sub-identifiers
+- **Given** secrets are created for multiple Identifiers and SubIdentifiers
 - **When** the file structure is examined
-- **Then** the structure follows the pattern: `.secrets/[identifier]/[sub-identifier]/[spec].gpg`
+- **Then** the structure follows the pattern: `.secrets/[Identifier]/[SubIdentifier]/[spec].gpg`
 - **And** all directory names are valid POSIX directory names
-- **And** identifiers and sub-identifiers contain only alphanumeric characters and hyphens
+- **And** Identifiers and SubIdentifiers contain only alphanumeric characters and hyphens
 
 ## 3. Master Key Management
 
@@ -610,12 +610,12 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 ### 5.2 Secret File Creation
 - **Given** all required values are provided for a new secret
 - **When** the creation process completes
-- **Then** a secret file is created at `.secrets/[identifier]/[sub-identifier]/[spec].gpg`
+- **Then** a secret file is created at `.secrets/[Identifier]/[SubIdentifier]/[spec].gpg`
 - **And** the file is encrypted using the MasterGpgKey
 - **And** the change is committed to git with format "[operation]: [SubIdentifier] [SpecType] for [Identifier]"
 
 ### 5.3 Existing Secret Handling
-- **Given** a secret file already exists for the chosen identifier/sub-identifier/spec combination
+- **Given** a secret file already exists for the chosen Identifier/SubIdentifier/spec combination
 - **When** creation is attempted
 - **Then** the user is warned that the secret already exists
 - **And** three options are presented: Quit (default), Open in EDITOR, Proceed and overwrite
@@ -648,7 +648,7 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 ### 6.2 Spec-based Copying
 - **Given** a user runs `fuzzlock copy <spec>` with a valid spec
 - **When** the command executes
-- **Then** fzf displays all available secrets for that spec in format "identifier/sub-identifier"
+- **Then** fzf displays all available secrets for that spec in format "Identifier/SubIdentifier"
 - **And** only secrets matching the specified spec are shown
 
 ### 6.3 Field-specific Copying
@@ -716,7 +716,7 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 ### 7.1 Secret Selection for Modification
 - **Given** a user runs `fuzzlock modify`
 - **When** the selection interface appears
-- **Then** fzf displays all existing secret files in format "identifier/sub-identifier/spec.gpg"
+- **Then** fzf displays all existing secret files in format "Identifier/SubIdentifier/spec.gpg"
 
 ### 7.2 Secret Editing
 - **Given** a secret file is selected for modification
@@ -758,7 +758,7 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 ### 8.1 Secret Selection for Deletion
 - **Given** a user runs `fuzzlock delete`
 - **When** the selection interface appears
-- **Then** fzf displays all existing secret files in format "identifier/sub-identifier/spec.gpg"
+- **Then** fzf displays all existing secret files in format "Identifier/SubIdentifier/spec.gpg"
 
 ### 8.2 Deletion Confirmation
 - **Given** a secret file is selected for deletion
@@ -778,7 +778,7 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 - **Given** a secret file is the last file in its subdirectory
 - **When** the secret is deleted
 - **Then** the empty subdirectory is removed
-- **And** if the identifier directory becomes empty, it is also removed
+- **And** if the Identifier directory becomes empty, it is also removed
 
 ## 9. Secret Listing
 
@@ -788,7 +788,7 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 - **Then** all secrets are displayed in a directory tree format
 - **And** only secret files and the MasterKeyFile are shown
 - **And** colors are used when possible
-- **And** the complete structure shows identifiers, sub-identifiers, and secret files
+- **And** the complete structure shows Identifiers, SubIdentifiers, and secret files
 
 ### 9.2 Empty Vault Listing
 - **Given** no secrets exist in the vault (only MasterKeyFile)
@@ -1235,7 +1235,7 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 
 ### 17.4 Special Character Handling
 - **Given** inputs contain special characters, unicode, or non-ASCII content
-- **When** validation occurs for identifiers and field names
+- **When** validation occurs for Identifiers and field names
 - **Then** only allowed characters pass validation
 - **And** clear error messages explain character restrictions
 
@@ -1329,7 +1329,7 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 - **And** path resolution handles non-standard home directory layouts
 
 ### 19.4 POSIX Directory Name Validation
-- **Given** identifiers and sub-identifiers are validated as POSIX directory names
+- **Given** Identifiers and SubIdentifiers are validated as POSIX directory names
 - **When** validation occurs
 - **Then** names starting with dots are rejected (hidden files)
 - **And** names containing forward slashes are rejected
@@ -1363,6 +1363,6 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 ### 20.4 Filesystem Case Sensitivity
 - **Given** different filesystem case sensitivity behaviors
 - **When** file operations are performed
-- **Then** identifier/sub-identifier case is preserved correctly
+- **Then** Identifier/SubIdentifier case is preserved correctly
 - **And** file path resolution is consistent across filesystems
 - **And** no conflicts arise from case-insensitive filesystem behavior
