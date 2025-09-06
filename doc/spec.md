@@ -213,10 +213,43 @@ The schema type is derived from the spec name used (e.g., "account", "totp", "ge
 
 ---
 
+## Encryption Architecture
+
+### Master Key Management
+
+- Fuzzlock uses a single master key for all encryption operations to ensure password synchronization.
+- The master key is a 4096-bit GPG private key, encrypted with a user-provided password.
+- The master key is stored in `.secrets/.masterkey` as ASCII armor format.
+- The master key file is version controlled along with all secret files.
+
+### Encryption Abstraction
+
+All encryption operations are abstracted behind a single encryption class that MUST be general enough to support different encryption methods, including future post-quantum cryptography. The abstraction hides all implementation details while maintaining the only consistent user experience requirement:
+
+- User provides a single password per session
+- That password applies to encrypt/decrypt all secret files
+
+This design allows Fuzzlock to migrate away from GPG to other encryption methods without changing the user experience or core application logic. Future encryption backends may use different underlying mechanisms (derived keys, certificates, quantum-resistant algorithms, etc.) but the user will always provide one password that secures all their secrets.
+
+### Master Key Initialization
+
+- On first use, if no master key exists, Fuzzlock prompts the user to create one.
+- The user provides a password that will be used to encrypt the master key.
+- A 4096-bit GPG private key is generated and stored in `.secrets/.masterkey`.
+- Upon master key creation, it is automatically committed to git.
+
+### Session Management
+
+- At the start of each session, users must provide their master key password.
+- The master key remains unlocked in memory for the duration of the session.
+- All secret files are encrypted/decrypted using this master key.
+
+---
+
 ## Technology
 
 - **Python**
-- **GPG** (AES256 symmetric encryption)
+- **GPG** (for master key generation and AES256 encryption)
 - **fzf** (fuzzy selection)
 
 ## Testing
