@@ -358,6 +358,13 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 - If any dependencies are missing, it prints all missing dependencies and exits.
 - No operations are performed if dependencies are not satisfied.
 
+## Spec Command Validation
+
+- At startup, Fuzzlock validates that all commands defined in spec files are unique.
+- Both single-character and multi-character commands must be unique across all specs.
+- If duplicate commands are found, the script prints all conflicting commands and exits.
+- No operations are performed if command conflicts exist.
+
 ## Implementation
 
 - The entire script must be contained in a single Python file.
