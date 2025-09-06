@@ -293,6 +293,31 @@ fuzzlock export /exists/noexist    # Creates /exists/noexist.tar(.gpg)
 
 ---
 
+### Listing Secrets
+
+- Use `fuzzlock list` to view all existing secrets in a directory tree format.
+- The output displays only secret files and the master key file, using colors when possible.
+- Shows the complete structure including identifiers, sub-identifiers, and secret files.
+
+#### Example Output:
+```
+.secrets/
+├── .masterkey
+├── example.com/
+│   ├── user1/
+│   │   ├── account.gpg
+│   │   ├── generic.gpg
+│   │   └── totp.gpg
+│   └── user2/
+│       ├── account.gpg
+│       └── totp.gpg
+└── other.com/
+    └── user3/
+        └── generic.gpg
+```
+
+---
+
 ## Dependency Management
 
 - At startup, Fuzzlock evaluates all required dependencies.
